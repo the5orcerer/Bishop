@@ -1,127 +1,199 @@
-# 🕵️‍♂️ Bishop - JavaScript Leak Detector
+# Bishop - Secret Detection Patterns
 
-**Bishop** is a collection of carefully crafted Regular Expressions (regex) used to detect sensitive information leaks in JavaScript codebases. Whether it's exposed API keys, secrets, passwords, or configuration files — Bishop helps identify and alert developers and security researchers to these critical issues fast and effectively.
+**Bishop** is a comprehensive collection of carefully crafted Regular Expressions (regex) used to detect sensitive information leaks in codebases. Whether it's exposed API keys, secrets, passwords, database credentials, or configuration files — Bishop helps identify and alert developers and security researchers to these critical issues fast and effectively.
 
-> 🔗 **Repo:** [https://github.com/the5orcerer/Bishop](https://github.com/the5orcerer/Bishop)
-
----
-
-## 🚀 Features
-
-* 🧠 High-confidence regex patterns for detecting:
-
-  * API keys
-  * Secrets & tokens
-  * User credentials
-  * Commented-out sensitive data
-  * Cloud provider credentials (AWS, GCP, Azure, etc.)
-* 🔍 Ready-to-use YAML structure for integration with tools
-* 🔧 Simple integration into scanners, linters, CI/CD pipelines
-* 💡 Open-source and customizable
+> **Repo:** [https://github.com/the5orcerer/Bishop](https://github.com/the5orcerer/Bishop)
 
 ---
 
-## 📦 Pattern Categories
+## Features
 
-All patterns follow this structure:
+* High-confidence regex patterns for detecting:
+  * API keys (OpenAI, Stripe, AWS, GCP, Azure, and 50+ services)
+  * Authentication tokens (JWT, OAuth, Bearer tokens)
+  * Cloud provider credentials (AWS, GCP, Azure, DigitalOcean)
+  * Database connection strings (MongoDB, PostgreSQL, MySQL, Redis)
+  * Payment processor keys (Stripe, PayPal, Square, Braintree)
+  * Communication service tokens (Slack, Discord, Twilio, SendGrid)
+  * Private keys and certificates (RSA, SSH, PGP)
+  * Personal identifiable information (PII)
+* Ready-to-use YAML structure for integration with tools
+* Simple integration into scanners, linters, CI/CD pipelines
+* Open-source and customizable
+
+---
+
+## Directory Structure
+
+Patterns are organized into categories for easy navigation:
+
+```
+patterns/
+├── api-keys/              # Third-party API keys (OpenAI, Twilio, GitHub, etc.)
+├── authentication/        # Cryptographic keys, tokens, JWT, OAuth patterns
+├── cloud-providers/       # AWS, GCP, Azure, DigitalOcean credentials
+├── communication/         # Slack, Discord, email service tokens
+├── custom/                # User-defined custom patterns
+├── databases/             # Database connection strings and credentials
+├── devops/                # CI/CD, Docker, Kubernetes, Terraform secrets
+├── frameworks/            # React, Vue, Angular, Node.js specific patterns
+├── generic/               # Generic credential and secret patterns
+├── mobile/                # Mobile app specific patterns (React Native, Ionic)
+├── payment/               # Stripe, PayPal, Square payment processor keys
+├── personal-data/         # PII patterns (SSN, credit cards, phone numbers)
+└── third-party-rules/     # External rule sets (Nuclei, TruffleHog)
+```
+
+---
+
+## Pattern Format
+
+All patterns follow this YAML structure:
 
 ```yaml
 patterns:
   - pattern:
-      name: <Pattern Name>
-      regex: <Regex>
-      confidence: <low|medium|high>
+      name: "Pattern Name"
+      regex: "regex-pattern"
+      confidence: "High|Medium|Low"
 ```
+
+### Confidence Levels
+
+| Level | Description |
+|-------|-------------|
+| **High/Critical** | Highly specific patterns with minimal false positives |
+| **Medium** | Reasonably specific, may require some review |
+| **Low/Info** | Generic patterns, higher false positive rate |
 
 ---
 
-### 🔐 Password and Credential Patterns
+## Example Patterns
+
+### AWS Access Key
 
 ```yaml
 - pattern:
-    name: Generic Password
-    regex: "(?i)\\b(pass|password|passwd|pwd|passcode|passphrase|pin)\\b\\s*[:=]\\s*['\"]?([a-zA-Z0-9@#$_%&*!+-]{8,})['\"]?"
-    confidence: high
+    name: "AWS Access Key ID"
+    regex: "AKIA[0-9A-Z]{16}"
+    confidence: "High"
 ```
 
----
-
-### 👤 Username and Identity Patterns
+### Stripe Secret Key
 
 ```yaml
 - pattern:
-    name: Generic Username
-    regex: "(?i)\\b(user|username|login|usr|uid|userid|uname|admin_user|root_user|db_user|email)\\b\\s*[:=]\\s*['\"]?([a-zA-Z0-9-_@.]{5,})['\"]?"
-    confidence: medium
+    name: "Stripe Secret Key"
+    regex: "sk_live_[0-9a-zA-Z]{24}"
+    confidence: "High"
 ```
 
----
-
-### 🔑 Secret, Token, and Key Patterns
+### JWT Token
 
 ```yaml
 - pattern:
-    name: Generic Secret
-    regex: "(?i)\\b(secret|token|auth_token|api_key|apiKey|access_token|session_token|jwt_token|encryption_key|ssh_key|crypt_key|access_key)\\b\\s*[:=]\\s*['\"]?([a-zA-Z0-9-_]{8,})['\"]?"
-    confidence: high
+    name: "JWT Token"
+    regex: "eyJ[A-Za-z0-9-_=]+\\.eyJ[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*"
+    confidence: "Medium"
 ```
 
----
-
-### 💬 Sensitive Information in Comments
+### Database Connection String
 
 ```yaml
 - pattern:
-    name: Sensitive Comment
-    regex: "(?i)(?:#|\\/\\/|\\/\\*|<!--)\\s*(pass|password|passwd|pwd|user|username|secret|token|auth_token|api_key|apiKey|access_key)\\s*[:=]\\s*['\"]?([a-zA-Z0-9@#$_%&*!+-]{5,})['\"]?"
-    confidence: low
+    name: "MongoDB Connection String"
+    regex: "mongodb(?:\\+srv)?://[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+@[a-zA-Z0-9.-]+"
+    confidence: "High"
 ```
 
 ---
 
-## 🛠 Usage
+## Usage
 
-You can integrate Bishop regex patterns with:
+### With grep/ripgrep
 
-* Static code analysis tools
-* CI/CD pipeline scanners (like GitHub Actions, GitLab CI, etc.)
-* Custom Python or Node.js scripts for repo audits
-* Git hooks or pre-commit scanners
+```bash
+# Search for AWS keys
+rg "AKIA[0-9A-Z]{16}" ./src
 
-**Example Python parser coming soon in `/scripts` folder.**
+# Search for Stripe keys
+grep -rE "sk_live_[0-9a-zA-Z]{24}" ./
+```
+
+### With Python
+
+```python
+import re
+import yaml
+
+# Load patterns
+with open('patterns/api-keys/api-keys.yaml', 'r') as f:
+    data = yaml.safe_load(f)
+
+# Search in code
+code = open('app.js').read()
+for item in data['patterns']:
+    pattern = item['pattern']
+    matches = re.findall(pattern['regex'], code)
+    if matches:
+        print(f"Found {pattern['name']}: {matches}")
+```
+
+### Integration Examples
+
+* **CI/CD Pipelines**: GitHub Actions, GitLab CI, Jenkins
+* **Pre-commit Hooks**: Prevent secrets from being committed
+* **Static Analysis**: Integrate with custom scanners
+* **IDE Plugins**: VS Code, JetBrains extensions
 
 ---
 
-## 📂 Roadmap
+## Quick Start
 
-* [ ] Add patterns for third-party service keys (Stripe, Firebase, Twilio)
-* [ ] Integrate auto-scanner script
-* [ ] VS Code plugin support
-* [ ] Add example usage with `grep`, `ripgrep`, or custom scanner
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/the5orcerer/Bishop.git
+   ```
 
----
+2. Browse patterns by category:
+   ```bash
+   ls patterns/
+   ```
 
-## 🙌 Contributing
-
-We welcome PRs for:
-
-* New regex patterns
-* Improvements to pattern accuracy
-* Usage scripts
-* Documentation
-
-Please follow the contribution guidelines in `CONTRIBUTING.md`.
+3. Use patterns in your scanner or tool of choice
 
 ---
 
-## 📜 License
+## Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
+
+* Adding new patterns
+* Improving existing patterns
+* Reporting false positives/negatives
+* Documentation improvements
+
+---
+
+## Roadmap
+
+- [x] Organize patterns into categories
+- [x] Add contribution guidelines
+- [ ] Add automated testing for patterns
+- [ ] Create VS Code extension
+- [ ] Add example scanner scripts
+- [ ] Integrate with TruffleHog/Gitleaks formats
+
+---
+
+## License
 
 This project is licensed under the **MIT License**. See `LICENSE` for more information.
 
 ---
 
-## 🔗 Stay Connected
+## Stay Connected
 
-Made with ❤️ by [the5orcerer](https://github.com/the5orcerer)
+Made with care by [the5orcerer](https://github.com/the5orcerer)
 
-Join the mission to eliminate JavaScript leaks — one pattern at a time.
+Join the mission to eliminate secret leaks — one pattern at a time.

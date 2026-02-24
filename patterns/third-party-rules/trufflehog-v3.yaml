@@ -1,3 +1,7 @@
+# Trufflehog Patterns
+# Source: https://github.com/trufflesecurity/trufflehog
+# Converted to Bishop YAML format
+
 patterns:
   - pattern:
       name: Ipstack

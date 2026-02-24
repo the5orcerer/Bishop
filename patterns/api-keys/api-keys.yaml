@@ -109,7 +109,7 @@ patterns:
       confidence: "High"
   - pattern:
       name: "OpenAI API Key"
-      regex: "sk-[0-9a-zA-Z]{48}"
+      regex: "sk-(?:proj-)?[0-9a-zA-Z_-]{20,}"
       confidence: "High"
   - pattern:
       name: "OpenAI Organization ID"
